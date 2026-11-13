@@ -1,7 +1,8 @@
-export type Role = 'admin' | 'supplier' | 'architect'
+export type Role = 'admin' | 'client' | 'trade' | 'supplier' | 'architect'
 
 export type Miniuser = {
     _id?: string
+    id?: string
     fullname: string
     username: string
     role?: Role
@@ -9,11 +10,26 @@ export type Miniuser = {
     showPrices?: boolean
 }
 
+export type User = Miniuser & {
+    password?: string
+}
+
+export type UserIdParams = {
+    userId: string
+}
+export type UsernameParams = {
+    username: string
+}
+
+export type UserInBody = {
+    user: User
+}
+ 
 export type LoginCredentials = {
     username: string
     password: string
 }
 
-export type User = Miniuser & {
-    password?: string
+export type CredentialInBody = {
+    credentials: LoginCredentials
 }

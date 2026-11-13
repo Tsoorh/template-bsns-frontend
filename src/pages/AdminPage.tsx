@@ -5,16 +5,21 @@ import { AdminProductList } from '../cmps/Admin/AdminProductList'
 import { AdminUserList } from '../cmps/Admin/AdminUserList'
 import { AdminPriceSettings } from '../cmps/Admin/AdminPriceSettings'
 import { AdminEditPage } from '../cmps/Admin/AdminEditPage'
+import { AdminThemeCustomizer } from '../cmps/Admin/AdminThemeCustomizer'
+import { AdminPagesEditor } from '../cmps/Admin/AdminPagesEditor'
+import { AdminBulkImporter } from '../cmps/Admin/AdminBulkImporter'
 import { SiteMediaDraftProvider } from '../context/SiteMediaDraftContext'
 import { useLanguage } from '../hooks/useLanguage'
 import '../assets/styles/pages/AdminPage.css'
 
+export type AdminTab = 'products' | 'appearance' | 'pages' | 'bulk' | 'edit-page' | 'users' | 'settings'
+
 export const AdminPage: React.FC = () => {
-    const [searchParams] = useSearchParams()
+    const [searchParams, setSearchParams] = useSearchParams()
     const editProductId = searchParams.get('edit')
-    const initialTabParam = searchParams.get('tab') as 'products' | 'users' | 'settings' | 'edit-page' | null
+    const initialTabParam = searchParams.get('tab') as AdminTab | null
     
-    const [activeTab, setActiveTab] = useState<'products' | 'users' | 'settings' | 'edit-page'>(
+    const [activeTab, setActiveTab] = useState<AdminTab>(
         initialTabParam || (editProductId ? 'products' : 'products')
     )
     const [user, setUser] = useState(authService.getLoggedinUser())
@@ -37,6 +42,15 @@ export const AdminPage: React.FC = () => {
         return () => window.removeEventListener('user-changed', onUserChanged)
     }, [user, isAdmin, navigate])
 
+    const handleTabChange = (tab: AdminTab) => {
+        setActiveTab(tab)
+        setSearchParams(prev => {
+            const next = new URLSearchParams(prev)
+            next.set('tab', tab)
+            return next
+        })
+    }
+
     if (!user || !isAdmin) return null
 
     return (
@@ -47,36 +61,57 @@ export const AdminPage: React.FC = () => {
                     <nav className="admin-tabs">
                         <button 
                             className={activeTab === 'products' ? 'active' : ''} 
-                            onClick={() => setActiveTab('products')}
+                            onClick={() => handleTabChange('products')}
                         >
-                            {isEn ? 'Products' : 'מוצרים'}
+                            📦 {isEn ? 'Products' : 'מוצרים'}
                         </button>
                         <button 
-                            className={activeTab === 'users' ? 'active' : ''} 
-                            onClick={() => setActiveTab('users')}
+                            className={activeTab === 'appearance' ? 'active' : ''} 
+                            onClick={() => handleTabChange('appearance')}
                         >
-                            {isEn ? 'Users' : 'משתמשים'}
+                            🎨 {isEn ? 'Appearance & Theme' : 'עיצוב ומראה'}
                         </button>
                         <button 
-                            className={activeTab === 'settings' ? 'active' : ''} 
-                            onClick={() => setActiveTab('settings')}
+                            className={activeTab === 'pages' ? 'active' : ''} 
+                            onClick={() => handleTabChange('pages')}
                         >
-                            {isEn ? 'Price Settings' : 'הגדרות מחירים'}
+                            📝 {isEn ? 'Story & Legal' : 'סיפור ומשפטי'}
+                        </button>
+                        <button 
+                            className={activeTab === 'bulk' ? 'active' : ''} 
+                            onClick={() => handleTabChange('bulk')}
+                        >
+                            📥 {isEn ? 'Bulk Import' : 'ייבוא מרוכז'}
                         </button>
                         <button 
                             className={activeTab === 'edit-page' ? 'active' : ''} 
-                            onClick={() => setActiveTab('edit-page')}
+                            onClick={() => handleTabChange('edit-page')}
                         >
-                            {isEn ? 'Edit Page' : 'עריכת עמוד'}
+                            🖼️ {isEn ? 'Site Media' : 'מדיה ובאנר'}
+                        </button>
+                        <button 
+                            className={activeTab === 'users' ? 'active' : ''} 
+                            onClick={() => handleTabChange('users')}
+                        >
+                            👥 {isEn ? 'Users' : 'משתמשים'}
+                        </button>
+                        <button 
+                            className={activeTab === 'settings' ? 'active' : ''} 
+                            onClick={() => handleTabChange('settings')}
+                        >
+                            ⚙️ {isEn ? 'Price Settings' : 'הגדרות מחיר'}
                         </button>
                     </nav>
                 </header>
 
                 <main className="admin-content">
                     {activeTab === 'products' && <AdminProductList initialProductId={editProductId} />}
+                    {activeTab === 'appearance' && <AdminThemeCustomizer />}
+                    {activeTab === 'pages' && <AdminPagesEditor />}
+                    {activeTab === 'bulk' && <AdminBulkImporter />}
+                    {activeTab === 'edit-page' && <AdminEditPage />}
                     {activeTab === 'users' && <AdminUserList />}
                     {activeTab === 'settings' && <AdminPriceSettings />}
-                    {activeTab === 'edit-page' && <AdminEditPage />}
                 </main>
             </div>
         </SiteMediaDraftProvider>

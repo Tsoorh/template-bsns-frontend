@@ -3,14 +3,39 @@ import '../assets/styles/pages/AboutPage.css';
 import { Icons } from '../cmps/Icons';
 import { ContactSection } from '../cmps/ContactSection';
 import { useLanguage } from '../hooks/useLanguage';
+import { useTheme } from '../context/ThemeContext';
+import { DEFAULT_SITE_SETTINGS } from '../model/site-settings.model';
 
 export const About = () => {
     const { language } = useLanguage();
+    const { settings } = useTheme();
     const isEn = language === 'en';
 
     useEffect(() => {
         window.scrollTo(0, 0);
     }, []);
+
+    const story = settings?.story || DEFAULT_SITE_SETTINGS.story;
+    const branding = settings?.branding || DEFAULT_SITE_SETTINGS.branding;
+    const brandName = isEn ? branding.name.en : branding.name.he;
+
+    const bioTitle = isEn ? story.bioTitle.en : story.bioTitle.he;
+    const bioBody = isEn ? story.bioBody.en : story.bioBody.he;
+    const studioTitle = isEn ? story.studioTitle.en : story.studioTitle.he;
+    const studioBody = isEn ? story.studioBody.en : story.studioBody.he;
+
+    const workshopImgs = (story.workshopImages && story.workshopImages.length >= 4)
+        ? story.workshopImages
+        : [
+            'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1540518614846-7ede433c4ef0?q=80&w=800&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1505691938895-1758d7feb511?q=80&w=800&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=800&auto=format&fit=crop'
+        ];
+
+    const bioImage = (story.workshopImages && story.workshopImages[0])
+        ? story.workshopImages[0]
+        : 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?q=80&w=1000&auto=format&fit=crop';
 
     return (
         <div className="about-layout" dir={isEn ? 'ltr' : 'rtl'}>
@@ -24,32 +49,29 @@ export const About = () => {
                         <div className="about-bio-divider-vertical"></div>
                         <div className="about-bio-text-wrapper">
                             <span className="about-bio-title">
-                                {isEn ? 'Tiran Lasry has lived lighting from a young age.' : 'טירן לסרי חי תאורה מגיל צעיר.'}
+                                {bioTitle}
                             </span>
-                            <span className="about-bio-body">
-                                {isEn 
-                                    ? '\n\nHe grew up alongside his father, a metal spinner by profession, and learned the fundamentals of the craft through real work: material, machine, weight, and precision. These years laid the foundation for an approach that combines deep technical knowledge with design sensitivity.\n\nTiran developed products and deepened his understanding of the entire industry: from planning and production to display and sales.\n\nAfter decades of activity in the industry, he chose to return to the studio and manual work. To the material. To proportion. To precision.'
-                                    : '\n\nהוא גדל לצד אביו, איש לחצן מתכת במקצועו, ולמד את יסודות המלאכה מתוך עבודה אמיתית: חומר, מכונה, משקל ודיוק. השנים הללו הניחו את היסוד לגישה המשלבת ידע טכני עמוק עם רגישות עיצובית.\n\nטירן פיתח מוצרים והעמיק בהבנת התעשייה כולה: מתכנון וייצור ועד תצוגה ומכירה.\n\nלאחר עשרות שנות עשייה בתעשייה, בחר לחזור לסטודיו ולעבודה ידנית. לחומר. לפרופורציה. לדיוק.'}
+                            <span className="about-bio-body" style={{ whiteSpace: 'pre-line' }}>
+                                {bioBody}
                             </span>
                         </div>
                     </div>
-                    <img src="/images/Figma/Tiran_About.png" alt="Tiran About" className="about-bio-image" />
+                    <img src={bioImage} alt={brandName} className="about-bio-image" style={{ objectFit: 'cover' }} />
                 </div>
 
                 {/* Studio Section */}
                 <div className="about-studio-section">
                     <div className="about-studio-gallery">
-                        <img src="/images/Figma/About_photo1.png" alt="About detail 1" />
-                        <img src="/images/Figma/About_photo2.png" alt="About detail 2" />
-                        <img src="/images/Figma/About_photo3.png" alt="About detail 3" />
-                        <img src="/images/Figma/About_photo4.png" alt="About detail 4" />
+                        <img src={workshopImgs[0]} alt="Workshop detail 1" style={{ objectFit: 'cover' }} />
+                        <img src={workshopImgs[1]} alt="Workshop detail 2" style={{ objectFit: 'cover' }} />
+                        <img src={workshopImgs[2]} alt="Workshop detail 3" style={{ objectFit: 'cover' }} />
+                        <img src={workshopImgs[3]} alt="Workshop detail 4" style={{ objectFit: 'cover' }} />
                     </div>
                     <div className="about-studio-content">
                         <div className="about-studio-divider-horizontal"></div>
-                        <div className="about-studio-text">
-                            {isEn 
-                                ? 'In his studio, handcrafted lighting fixtures are created, combining wood, metal, and glass to create functional objects with a presence.\n\nThe works are born from a dialogue with space, light, and people.\nEach lighting fixture is created to illuminate the place, but also to define the atmosphere within it.\n\nTiran works in collaboration with lighting designers, architects, interior designers, and private clients who are looking for precise, high-quality, and timeless lighting solutions.'
-                                : 'בסטודיו שלו נוצרים גופי תאורה בעבודת יד המשלבים עץ, מתכת וזכוכית ליצירת אובייקטים פונקציונליים בעלי נוכחות.\n\nהעבודות נולדות מתוך דיאלוג עם החלל, האור והאדם.\nכל גוף תאורה נוצר כדי להאיר את המקום, אך גם להגדיר את האווירה שבו.\n\nטירן עובד בשיתוף פעולה עם מתכנני תאורה, אדריכלים, מעצבי פנים ולקוחות פרטיים המחפשים פתרונות תאורה מדויקים, איכותיים ועל־זמניים.'}
+                        <div className="about-studio-text" style={{ whiteSpace: 'pre-line' }}>
+                            <h3 style={{ marginBottom: '1rem', fontSize: '1.4rem' }}>{studioTitle}</h3>
+                            {studioBody}
                         </div>
                     </div>
                 </div>
@@ -58,30 +80,29 @@ export const About = () => {
 
             {/* Part B: Gradient CTA */}
             <section className="about-gradient-sec gradient-sec">
-                <div className="gradient-text-wrapper">
-                    <span className="gradient-text-medium">{isEn ? 'Precision ' : 'דיוק '}</span>
-                    <span className="gradient-text-light">{isEn ? 'built over a lifetime' : 'שנבנה לאורך חיים שלמים'}</span>
-        </div>
-                
-                <div className="gradient-divider"></div>
-                
-                <a 
-                    href={`https://wa.me/972547513434?text=${encodeURIComponent(
-                        isEn 
-                            ? "Hi, I reached out through the website and would like to consult regarding a lighting project." 
-                            : "היי, הגעתי דרך האתר ואשמח להתייעץ לגבי פרויקט תאורה."
-                    )}`}
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="gradient-cta animated-link"
+                <div className="gradient-sec-content">
+                    <div className="gradient-divider"></div>
+                    <h2 className="gradient-sec-text">
+                        {isEn 
+                            ? 'Special models can be developed for unique architectural projects upon request.'
+                            : 'ניתן לפתח דגמים ייעודיים בהתאמה אישית לפרויקטים אדריכליים לפי דרישה.'}
+                    </h2>
+                </div>
+                <div 
+                    className="gradient-sec-link animated-link" 
+                    role="link" 
+                    tabIndex={0}
+                    onClick={() => window.location.assign('/contact')}
+                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && window.location.assign('/contact')}
+                    aria-label={isEn ? "Contact us for custom projects" : "צור קשר לפרויקטים בהתאמה אישית"}
                 >
-                    <span>{isEn ? 'Contact us about a project' : 'צור קשר לגבי פרויקט'}</span>
-                    <Icons iconName={isEn ? 'next' : 'back'} />
-                </a>
+                    <span>{isEn ? 'Contact Us' : 'יצירת קשר'}</span>
+                    <Icons iconName={isEn ? "next" : "back"} />
+                </div>
             </section>
 
-            {/* Footer Form Section */}
+            {/* Part C: Footer Contact Form */}
             <ContactSection />
         </div>
     );
-}
+};

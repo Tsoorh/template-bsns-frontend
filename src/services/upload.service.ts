@@ -11,10 +11,38 @@ export interface CloudinaryUploadResult {
   bytes: number
 }
 
+export interface StorageUploadResult {
+  url: string
+  key: string
+}
+
 export const uploadService = {
+  uploadMedia,
   uploadImg,
   uploadDirectWithSignature,
   uploadUnsignedDirect
+}
+
+/**
+ * Uploads directly to backend API (which pushes to Cloudflare R2 or local disk fallback)
+ */
+async function uploadMedia(file: File, folder: 'products' | 'brand' | 'media' | 'general' = 'general', siteId: string = 'template-store'): Promise<StorageUploadResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('folder', folder)
+  formData.append('siteId', siteId)
+
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData
+  })
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}))
+    throw new Error(errorData.error || 'Failed to upload media to server')
+  }
+
+  return res.json()
 }
 
 async function uploadImg(file: File, publicId: string) {

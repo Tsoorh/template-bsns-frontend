@@ -1,11 +1,48 @@
+export type hebrewEnglishObj = {
+    he: string
+    en: string
+}
 
+export type ProductPrice = {
+    amount: number
+    variant?: hebrewEnglishObj
+    wood?: hebrewEnglishObj // Legacy alias for variant
+    size?: string
+    sku?: string
+}
 
-export type FilterBy = {
-    txt?: string
-    price?: number
-    category?:string
+export type ProductSize = {
+    height?: number
+    diameter?: number
+    length?: number
+    width?: number
+    depth?: number
+    upTo?: number
+}
+
+export type Product = {
+    _id?: string
+    id?: string
+    name: hebrewEnglishObj
+    description: hebrewEnglishObj
+    price?: ProductPrice[]
     isActive?: boolean
     isNew?: boolean
+    isFeatured?: boolean
+}
+
+export type FullProduct = Product & {
+    category: hebrewEnglishObj[]
+    imgsUrl: string[]
+    size: ProductSize[]
+    attributes?: Record<string, string | string[] | hebrewEnglishObj>
+    // Backwards compatibility aliases
+    socketType?: { screwType?: string; lightType?: string }
+    material?: hebrewEnglishObj[]
+    woodType?: hebrewEnglishObj[]
+    diameter?: number
+    createdAt?: string
+    updatedAt?: string
 }
 
 export type ProductFilterCriteria = {
@@ -16,54 +53,19 @@ export type ProductFilterCriteria = {
     screwType?: string[]
     minPrice?: number
     maxPrice?: number
+    attributes?: Record<string, string[]>
 }
 
-export type hebrewEnglishObj = {
-    he:string
-    en:string
-}
-
-export type ProductPrice = {
-    wood: hebrewEnglishObj
-    amount: number
-    size?: string
-    sku?: string
-}
-
-export type Product = {
-    _id?: string
-    name: hebrewEnglishObj
-    description: hebrewEnglishObj
-    price?: ProductPrice[]
+export type FilterBy = {
+    txt?: string
+    price?: number
+    category?: string
     isActive?: boolean
     isNew?: boolean
+    isFeatured?: boolean
 }
 
 export type ProductParams = { productId: string }
-
-export type ProductSize = {
-    height?: number
-    diameter?: number
-    length?: number
-    width?: number
-    depth?: number
-    upTo?: number
-}
-type SocketType = {
-    screwType: string
-    lightType: string
-}
-
-export type FullProduct = Product & {
-    category:hebrewEnglishObj[]
-    imgsUrl: string[]
-    size: ProductSize[]
-    socketType:SocketType
-    material:hebrewEnglishObj[]
-    woodType:hebrewEnglishObj[]
-    isActive?: boolean
-}
-
 
 export type FullProductOrNull = FullProduct | null
 export type FullProductsOrNull = FullProduct[] | null

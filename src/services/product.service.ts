@@ -48,11 +48,42 @@ const downloadPriceList = async (type: 'pdf' | 'excel'): Promise<void> => {
 }
 
 
+const downloadImportTemplate = async (): Promise<void> => {
+    try {
+        const blob = await httpService.download('product/bulk/template')
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.style.display = 'none'
+        link.href = url
+        link.setAttribute('download', 'Product_Import_Template.xlsx')
+        document.body.appendChild(link)
+        link.click()
+        setTimeout(() => {
+            document.body.removeChild(link)
+            window.URL.revokeObjectURL(url)
+        }, 10000)
+    } catch (err) {
+        console.error('Download template failed:', err)
+        throw err
+    }
+}
+
+const bulkImport = async (formData: FormData): Promise<{
+    message: string
+    totalImported: number
+    imagesUploaded: number
+    errors: string[]
+}> => {
+    return await httpService.post('product/bulk/import', formData)
+}
+
 export const productService = {
     query,
     getById,
     add,
     update,
     remove,
-    downloadPriceList
+    downloadPriceList,
+    downloadImportTemplate,
+    bulkImport
 }

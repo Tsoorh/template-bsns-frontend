@@ -4,6 +4,8 @@ import type { SiteMediaConfig } from '../model/site-media.model'
 import { Icons } from './Icons'
 import { FullWidthBanner } from './FullWidthBanner'
 import { ContactSection } from './ContactSection'
+import { useTheme } from '../context/ThemeContext'
+import { siteConfig } from '../config/site.config'
 
 interface HomeContentProps {
     media: SiteMediaConfig
@@ -69,6 +71,9 @@ export const HomeContent: React.FC<HomeContentProps> = ({
     onDownloadPriceList
 }) => {
     const navigate = useNavigate()
+    const { settings } = useTheme()
+    const contact = settings?.contact || siteConfig.contact
+    const points = settings?.experiencePoints || EXPERIENCE_POINTS
     const heroVid = media.heroVideo
     const g = media.gallery
     const banner = media.fullWidthBanner
@@ -271,7 +276,7 @@ export const HomeContent: React.FC<HomeContentProps> = ({
                         <span className="experience-title-light">{isEn ? 'Creation of a moment.' : 'יצירה של רגע.'}</span>
                     </h2>
                     <div className="experience-points">
-                        {EXPERIENCE_POINTS.map(point => (
+                        {points.map(point => (
                             <div key={point.en} className="experience-point-item">
                                 <div className="experience-point-icon"><div className="experience-point-dot"></div></div>
                                 <div className="experience-point-text">{isEn ? point.en : point.he}</div>
@@ -285,7 +290,7 @@ export const HomeContent: React.FC<HomeContentProps> = ({
                         <Icons iconName={isEn ? 'next' : 'back'} />
                     </div>
                 ) : (
-                    <a href="mailto:tiranlasry@gmail.com" className="experience-bottom animated-link">
+                    <a href={`mailto:${contact.email}`} className="experience-bottom animated-link">
                         <span className="experience-bottom-text">{isEn ? 'Request a Quote' : 'בקשה להצעת מחיר'}</span>
                         <Icons iconName={isEn ? 'next' : 'back'} />
                     </a>

@@ -16,6 +16,8 @@ import { AdminPage } from './pages/AdminPage'
 import { PreviewHomePage } from './pages/PreviewHomePage'
 import { FloatingWhatsApp } from './cmps/FloatingWhatsApp'
 
+import { ThemeProvider } from './context/ThemeContext'
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -36,7 +38,8 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
+      <ThemeProvider>
+        <BrowserRouter>
         <Routes>
           <Route path="/preview-homepage" element={<PreviewHomePage />} />
           <Route path="*" element={
@@ -62,7 +65,8 @@ function App() {
           } />
         </Routes>
       </BrowserRouter>
-    </QueryClientProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
   )
 }
 

@@ -1,6 +1,7 @@
 import React, { useState, useLayoutEffect } from 'react'
 import type { FullProduct, hebrewEnglishObj, ProductSize } from '../../model/product.model'
 import { PRODUCT_OPTIONS } from '../../constants/product.constants'
+import { siteConfig } from '../../config/site.config'
 import { useLanguage } from '../../hooks/useLanguage'
 import {
     healHebrewEnglishArray,
@@ -345,12 +346,14 @@ export const AdminProductEdit: React.FC<Props> = ({ product, onSave, onCancel })
                         onRemoveVariant={removePriceVariant}
                     />
 
-                    <SocketOptionsEditor
-                        screwType={formData.socketType?.screwType || ''}
-                        lightType={formData.socketType?.lightType || ''}
-                        isEn={isEn}
-                        onSocketChange={handleSocketChange}
-                    />
+                    {siteConfig.features?.enableLightingSpecs && (
+                        <SocketOptionsEditor
+                            screwType={formData.socketType?.screwType || ''}
+                            lightType={formData.socketType?.lightType || ''}
+                            isEn={isEn}
+                            onSocketChange={handleSocketChange}
+                        />
+                    )}
 
                     <div className="form-section">
                         <h4>{isEn ? 'Sizes' : 'מידות'}</h4>

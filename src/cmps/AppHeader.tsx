@@ -1,5 +1,4 @@
 
-import Logo from '/images/Figma/Tiran_T_Grey_Logo.png';
 import { Icons } from "./Icons";
 import { useWindowWidth } from "../hooks/useWindowWidth";
 import type { FullProductsOrNull, hebrewEnglishObj } from '../model/product.model';
@@ -8,6 +7,8 @@ import { useEffect, useState, useMemo, useRef, type ChangeEvent } from 'react';
 import { MenuModal } from './MenuModal';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../hooks/useLanguage';
+import { useTheme } from '../context/ThemeContext';
+import { siteConfig } from '../config/site.config';
 import { Input } from '@mui/material';
 import { useDebounce } from '../hooks/useDebounce';
 import { productService } from '../services/product.service';
@@ -100,30 +101,62 @@ export const AppHeader = () => {
         return () => window.removeEventListener('site-options-changed', onSiteOptionsChanged)
     }, [queryClient])
 
+    const { settings } = useTheme();
+    const currentLogo = settings?.branding?.logoUrl || siteConfig.branding.logoUrl;
+    const brandName = language === 'en' 
+        ? (settings?.branding?.name?.en || siteConfig.branding.name.en)
+        : (settings?.branding?.name?.he || siteConfig.branding.name.he);
+
+    const { data: allProducts } = useQuery({
+        queryKey: ['header-products'],
+        queryFn: () => productService.query({}),
+        staleTime: 1000 * 60 * 5
+    });
+
+    const dynamicCategories = useMemo(() => {
+        if (!allProducts || !Array.isArray(allProducts)) return [];
+        const seen = new Set<string>();
+        const list: { en: string; he: string }[] = [];
+        for (const p of allProducts) {
+            if (p.category && Array.isArray(p.category)) {
+                for (const cat of p.category) {
+                    if (cat.en && !seen.has(cat.en.toLowerCase())) {
+                        seen.add(cat.en.toLowerCase());
+                        list.push({ en: cat.en, he: cat.he || cat.en });
+                    }
+                }
+            }
+        }
+        return list;
+    }, [allProducts]);
+
     const navbarProperties: NavbarProperties = useMemo(() => {
-        const lightingSubMenu: SubMenu = [
-            { title: { en: 'All Lighting Fixtures', he: 'כל גופי התאורה' }, address: '/product/category/all' }
+        const catalogSubMenu: SubMenu = [
+            { title: { en: 'All Items', he: 'כל הפריטים' }, address: '/product/category/all' }
         ]
 
         if (siteOptions?.isNewCollectionActive !== false) {
-            lightingSubMenu.push({
+            catalogSubMenu.push({
                 title: { en: 'New Collection', he: 'קולקציה חדשה' },
                 address: '/product/category/new-collection'
             })
         }
 
-        lightingSubMenu.push(
-            { title: { en: 'Wall', he: 'גופי תאורה לקיר' }, address: '/product/category/wall' },
-            { title: { en: 'Pendant', he: 'גופי תאורה תלויים' }, address: '/product/category/pendant' },
-            { title: { en: 'Ceiling', he: 'גופי תאורה צמודי תקרה' }, address: '/product/category/ceiling' }
-        )
+        if (dynamicCategories.length > 0) {
+            for (const cat of dynamicCategories) {
+                catalogSubMenu.push({
+                    title: cat,
+                    address: `/product/category/${cat.en.toLowerCase().replace(/\s+/g, '-')}`
+                });
+            }
+        }
 
         const props: NavbarProperties = [
             { title: { en: 'Home', he: 'בית' }, address: '/' },
             {
-                title: { en: 'Lighting', he: 'גופי תאורה' },
+                title: { en: 'Catalog', he: 'קטלוג' },
                 iconName: 'dropdown',
-                subMenu: lightingSubMenu
+                subMenu: catalogSubMenu
             },
             { title: { en: 'About', he: 'אודות' }, address: '/about' },
             { title: { en: 'Contact', he: 'יצירת קשר' }, address: '/contact' }
@@ -134,7 +167,7 @@ export const AppHeader = () => {
         }
 
         return props
-    }, [user, siteOptions?.isNewCollectionActive])
+    }, [user, siteOptions?.isNewCollectionActive, dynamicCategories])
 
     useEffect(() => {
         const onUserChanged = () => setUser(authService.getLoggedinUser())
@@ -210,7 +243,7 @@ export const AppHeader = () => {
                 onClick={() => navigate('/')}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate('/')}
             >
-                <img src={Logo} alt="Tiran-Logo" />
+                <img src={currentLogo} alt={brandName} />
             </div>
             <nav className="nav-bar">
                 {user && !isMobile ? (

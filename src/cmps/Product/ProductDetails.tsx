@@ -13,6 +13,8 @@ import { useNavigate, Link } from "react-router-dom"
 import { ShareModal } from "./ShareModal"
 import { buildProductGallery, type ProductGalleryItem } from "../../utils/cloudinary"
 import { suppressHeaderScrollFor } from "../../utils/scroll-lock"
+import { useTheme } from "../../context/ThemeContext"
+import { siteConfig } from "../../config/site.config"
 
 export const ProductDetails = () => {
     const { productId } = useParams()
@@ -40,7 +42,7 @@ export const ProductDetails = () => {
                 setProduct(productFromDb);
 
                 if (productFromDb && productFromDb.price && productFromDb.price.length > 0) {
-                    setSelectedWoodEn(productFromDb.price[0].wood.en)
+                    setSelectedWoodEn(productFromDb.price[0].wood?.en || '')
                 }
 
                 if (productFromDb && productFromDb.imgsUrl) {
@@ -55,19 +57,23 @@ export const ProductDetails = () => {
         loadProduct()
     }, [productId])
 
+    const { settings } = useTheme()
+    const isEnglish = language === 'en'
+    const contact = settings?.contact || siteConfig.contact
+    const branding = settings?.branding || siteConfig.branding
+    const brandName = isEnglish ? branding.name.en : branding.name.he
+
     useEffect(() => {
         if (product) {
             const titleName = language === 'en' ? product.name.en : product.name.he
-            document.title = `${titleName} | Tiran Lasry`
+            document.title = `${titleName} | ${brandName}`
         }
         return () => {
-            document.title = 'Tiran Lasry'
+            document.title = brandName
         }
-    }, [product, language])
+    }, [product, language, brandName])
 
     if (!product) return <SkeletonProductDetails />
-
-    const isEnglish = language === 'en'
     const isNew = Boolean(
         product.isNew || 
         product.category?.some(c => c.en?.toLowerCase().includes('new') || c.he?.includes('חדש'))
@@ -116,10 +122,10 @@ export const ProductDetails = () => {
 
     const onShareProduct = async () => {
         const shareData = {
-            title: `${nameLabel} | Tiran Lasry`,
+            title: `${nameLabel} | ${brandName}`,
             text: isEnglish 
-                ? `Check out the "${nameLabel}" lighting fixture by Tiran Lasry:` 
-                : `כדאי לראות את גוף התאורה "${nameLabel}" של טירן לסרי:`,
+                ? `Check out the "${nameLabel}" by ${brandName}:` 
+                : `כדאי לראות את "${nameLabel}" מאת ${brandName}:`,
             url: window.location.href,
         }
 
@@ -142,10 +148,10 @@ export const ProductDetails = () => {
     const sizeTitle = isEnglish ? 'Dimensions' : 'מידות'
     const linkLabel = isEnglish ? 'Request a Quote' : 'בקשה להצעת מחיר'
 
-    const materialsStr = product.material.map(m => isEnglish ? m.en : m.he).join(', ')
-    const hasMetal = product.material.some(m => m.en.toLowerCase() === 'metal')
-    const woodStr = product.woodType.map(w => isEnglish ? w.en : w.he).join(', ')
-    const hasWood = woodStr && !product.woodType.some(w => w.en.toLowerCase() === 'no wood')
+    const materialsStr = (product.material || []).map(m => isEnglish ? m.en : m.he).join(', ')
+    const hasMetal = (product.material || []).some(m => (m.en || '').toLowerCase() === 'metal')
+    const woodStr = (product.woodType || []).map(w => isEnglish ? w.en : w.he).join(', ')
+    const hasWood = woodStr && !(product.woodType || []).some(w => (w.en || '').toLowerCase() === 'no wood')
     const bulbStr = product.socketType?.screwType || ''
     const voltStr = product.socketType?.lightType || ''
 
@@ -153,8 +159,8 @@ export const ProductDetails = () => {
         ? product.price
             .filter(p => p.sku)
             .map(p => {
-                const isNoWood = p.wood.en.toLowerCase() === 'no wood'
-                const woodLabel = isNoWood ? '' : (isEnglish ? p.wood.en : p.wood.he)
+                const isNoWood = (p.wood?.en || '').toLowerCase() === 'no wood'
+                const woodLabel = isNoWood ? '' : (isEnglish ? (p.wood?.en || '') : (p.wood?.he || ''))
                 const sizeLabel = p.size ? p.size : ''
 
                 let bracketContent = ''
@@ -171,11 +177,11 @@ export const ProductDetails = () => {
             .join(', ')
         : ''
 
-    const uniqueWoodTypes = product.price ? Array.from(new Set(product.price.map(p => p.wood.en))).map(en => {
-        return product.price!.find(p => p.wood.en === en)!.wood
+    const uniqueWoodTypes = product.price ? Array.from(new Set(product.price.map(p => p.wood?.en || '').filter(Boolean))).map(en => {
+        return product.price!.find(p => p.wood?.en === en)!.wood!
     }) : []
 
-    const availablePricesForWood = product.price ? product.price.filter(p => p.wood.en === selectedWoodEn) : []
+    const availablePricesForWood = product.price ? product.price.filter(p => (p.wood?.en || '') === selectedWoodEn) : []
     const activePrice = availablePricesForWood[selectedPriceIdx] || availablePricesForWood[0]
 
     const onBack = () => {
@@ -278,8 +284,8 @@ export const ProductDetails = () => {
                                                 }}
                                             >
                                                 {uniqueWoodTypes.map((wood, idx) => (
-                                                    <option key={idx} value={wood.en}>
-                                                        {isEnglish ? wood.en : wood.he}
+                                                    <option key={idx} value={wood?.en || ''}>
+                                                        {isEnglish ? (wood?.en || '') : (wood?.he || '')}
                                                     </option>
                                                 ))}
                                             </select>
@@ -431,10 +437,10 @@ export const ProductDetails = () => {
                             </div>
                         </div>
 
-                        <a href={`https://wa.me/972547513434?text=${encodeURIComponent(
+                        <a href={`https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent(
                             isEnglish 
-                                ? `Hi, I would like to request a quote for the lighting fixture "${nameLabel}".` 
-                                : `היי, אשמח לקבל הצעת מחיר עבור גוף התאורה "${nameLabel}".`
+                                ? `Hello ${brandName}! 👋\nI am interested in requesting a quote for: "${nameLabel}".\nLink: ${window.location.href}` 
+                                : `שלום ${brandName}! 👋\nאשמח לקבל הצעת מחיר ופרטים עבור: "${nameLabel}".\nקישור: ${window.location.href}`
                         )}`} target="_blank" rel="noopener noreferrer" className="quote-btn">
                             <span>{linkLabel}</span>
                             <span className="quote-btn-icon">

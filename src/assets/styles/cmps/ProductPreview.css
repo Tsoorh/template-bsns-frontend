@@ -1,0 +1,200 @@
+.product-preview {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+    background-color: transparent;
+}
+
+.product-preview-image-container {
+    position: relative;
+    width: 100%;
+}
+
+.admin-edit-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+    color: #333;
+}
+
+.admin-edit-btn:hover {
+    background: #fff;
+    transform: scale(1.1);
+    color: #000;
+}
+
+[dir="rtl"] .admin-edit-btn {
+    left: auto;
+    right: 10px;
+}
+
+.product-new-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 5;
+    background-color: rgba(30, 28, 25, 0.92);
+    color: #ffffff;
+    font-family: 'Heebo', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+    line-height: 1.2;
+}
+
+[dir="rtl"] .product-new-badge {
+    right: auto;
+    left: 10px;
+}
+
+.product-preview-images {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background-color: #f7f7f7;
+    border-radius: 4px;
+    transition: box-shadow 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* אפקט תאורת אווירה גלריסטית - הארת גוף התאורה במעבר עכבר */
+.ambient-light-bloom {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 247, 232, 0.95) 0%, rgba(255, 250, 242, 0.55) 45%, rgba(247, 247, 247, 0) 75%);
+    opacity: 0;
+    transform: scale(0.95);
+    transform-origin: center center;
+    transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1), transform 0.55s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* התמונה גדלה באופן שווה וממורכז לכל 4 הכיוונים ללא תזוזת הכרטיס */
+.product-preview-images .img-wrapper {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    overflow: hidden;
+    background-position: center;
+    transform: scale(1);
+    transform-origin: center center;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: transform;
+}
+
+.product-preview-images .img-wrapper img {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* כפתור/תווית יוקרתית מינימליסטית בצפיפה חצי-שקופה */
+.hover-view-pill {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 18px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 20px;
+    font-family: Heebo, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: #1a1a1a;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+    white-space: nowrap;
+}
+
+@media (hover: hover) {
+    .product-preview:hover .product-preview-images {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06), 0 0 12px rgba(220, 180, 140, 0.08);
+    }
+
+    .product-preview:hover .ambient-light-bloom {
+        opacity: 1;
+        transform: scale(1.06);
+    }
+
+    .product-preview:hover .product-preview-images .img-wrapper {
+        transform: scale(1.05);
+    }
+
+    .product-preview:hover .hover-view-pill {
+        opacity: 1;
+    }
+
+    .product-preview:hover .product-name {
+        color: #000;
+    }
+}
+
+/* הטקסט נשאר יציב לחלוטין ללא כל תזוזה */
+.product-preview .product-name {
+    font-family: Heebo, sans-serif;
+    font-weight: 400;
+    font-size: clamp(17px, 1.1vw, 21px);
+    line-height: 1.25;
+    width: 100%;
+    margin-top: 2px;
+    transition: color 0.25s ease;
+}
+
+.product-preview .product-name.rtl {
+    text-align: right;
+}
+
+.product-preview .product-name.ltr {
+    text-align: left;
+}
+
+.product-preview .product-price-preview {
+    font-family: Heebo, sans-serif;
+    font-weight: 300;
+    font-size: clamp(14px, 0.9vw, 16px);
+    color: rgba(126, 133, 136, 1);
+    width: 100%;
+    margin-top: -4px;
+}
+
+.product-preview .product-price-preview.rtl { text-align: right; }
+.product-preview .product-price-preview.ltr { text-align: left; }
+
+/* במסכי מגע אין hover - הסתרת התווית למניעת עומס ויזואלי במובייל */
+@media (hover: none), (max-width: 768px) {
+    .hover-view-pill {
+        display: none !important;
+    }
+}

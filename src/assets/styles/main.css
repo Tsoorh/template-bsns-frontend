@@ -1,0 +1,24 @@
+/* utils */
+@import "./setup/vars.css";
+
+
+/* base */
+@import "./base/reset.css";
+/* @import "./base/forms.css"; */
+@import "./base/helpers.css";
+@import "./base/typography.css";
+
+
+/* cmps */
+@import "./cmps/AppHeader.css";
+@import "./cmps/ProductPreview.css";
+@import "./cmps/ProductFilter.css";
+@import "./cmps/ProductList.css";
+@import "./cmps/ProductDetails.css";
+@import "./cmps/MenuModal.css";
+@import "./cmps/AppFooter.css";
+
+
+/* pages */
+@import "./pages/ProductCategory.css";
+@import "./pages/AdminPage.css";

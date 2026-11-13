@@ -1,0 +1,509 @@
+import { useEffect, useState } from "react"
+import { useParams } from "react-router-dom"
+import { SkeletonProductDetails } from "../Skeleton/SkeletonProductDetails"
+import { ImageWithSkeleton } from "../Skeleton/ImageWithSkeleton"
+import type { FullProduct } from "../../model/product.model"
+import { productService } from "../../services/product.service"
+import { useLanguage } from "../../hooks/useLanguage"
+import { Icons } from "../Icons"
+import { ProductSuggestion } from "./ProductSuggestion"
+import { ContactSection } from "../ContactSection"
+import { authService } from "../../services/auth.service"
+import { useNavigate, Link } from "react-router-dom"
+import { ShareModal } from "./ShareModal"
+import { buildProductGallery, type ProductGalleryItem } from "../../utils/cloudinary"
+import { suppressHeaderScrollFor } from "../../utils/scroll-lock"
+
+export const ProductDetails = () => {
+    const { productId } = useParams()
+    const navigate = useNavigate()
+    const [product, setProduct] = useState<FullProduct | null>(null)
+    const [selectedWoodEn, setSelectedWoodEn] = useState<string>('')
+    const [selectedPriceIdx, setSelectedPriceIdx] = useState<number>(0)
+    const [isSpecsOpen, setIsSpecsOpen] = useState<boolean>(false)
+    const [isDimensionsOpen, setIsDimensionsOpen] = useState<boolean>(false)
+    const [gallery, setGallery] = useState<ProductGalleryItem[]>([])
+    const [mainImage, setMainImage] = useState<string>('')
+    const [isShareModalOpen, setIsShareModalOpen] = useState<boolean>(false)
+    const { language } = useLanguage()
+    const user = authService.getLoggedinUser()
+    const isAdmin = user?.role?.trim().toLowerCase() === 'admin'
+    const isSupplier = user?.role?.trim().toLowerCase() === 'supplier'
+
+    useEffect(() => {
+        window.scrollTo(0, 0)
+        
+        const loadProduct = async (): Promise<void> => {
+            if (!productId) return
+            try {
+                const productFromDb = await productService.getById(productId)
+                setProduct(productFromDb);
+
+                if (productFromDb && productFromDb.price && productFromDb.price.length > 0) {
+                    setSelectedWoodEn(productFromDb.price[0].wood.en)
+                }
+
+                if (productFromDb && productFromDb.imgsUrl) {
+                    const sortedPhotos = buildProductGallery(productFromDb.imgsUrl);
+                    setGallery(sortedPhotos);
+                    if (sortedPhotos.length > 0) setMainImage(sortedPhotos[0].mainUrl);
+                }
+            } catch (err) {
+                console.log("Error loading product:", err)
+            }
+        }
+        loadProduct()
+    }, [productId])
+
+    useEffect(() => {
+        if (product) {
+            const titleName = language === 'en' ? product.name.en : product.name.he
+            document.title = `${titleName} | Tiran Lasry`
+        }
+        return () => {
+            document.title = 'Tiran Lasry'
+        }
+    }, [product, language])
+
+    if (!product) return <SkeletonProductDetails />
+
+    const isEnglish = language === 'en'
+    const isNew = Boolean(
+        product.isNew || 
+        product.category?.some(c => c.en?.toLowerCase().includes('new') || c.he?.includes('חדש'))
+    )
+    const nameLabel = isEnglish ? product.name.en : product.name.he
+    const descriptionLabel = isEnglish ? product.description.en : product.description.he
+
+    const getCategoryBreadcrumb = () => {
+        if (!product.category || product.category.length === 0) {
+            return {
+                label: isEnglish ? 'All Lighting Fixtures' : 'כל גופי התאורה',
+                path: '/product/category/all'
+            }
+        }
+        const catEn = (product.category[0].en || '').toLowerCase()
+        if (catEn.includes('wall') || catEn.includes('קיר')) {
+            return {
+                label: isEnglish ? 'Wall Lights' : 'גופי תאורה לקיר',
+                path: '/product/category/wall'
+            }
+        }
+        if (catEn.includes('hanging') || catEn.includes('pendant') || catEn.includes('תלי')) {
+            return {
+                label: isEnglish ? 'Pendant Lights' : 'גופי תאורה תלויים',
+                path: '/product/category/pendant'
+            }
+        }
+        if (catEn.includes('ceiling') || catEn.includes('תקרה')) {
+            return {
+                label: isEnglish ? 'Ceiling Lights' : 'גופי תאורה צמודי תקרה',
+                path: '/product/category/ceiling'
+            }
+        }
+        if (catEn.includes('new') || catEn.includes('חדש')) {
+            return {
+                label: isEnglish ? 'New Collection' : 'קולקציה חדשה',
+                path: '/product/category/new-collection'
+            }
+        }
+        return {
+            label: isEnglish ? product.category[0].en : product.category[0].he,
+            path: `/product/category/${catEn.replace(/\s+/g, '-')}`
+        }
+    }
+    const categoryBreadcrumb = getCategoryBreadcrumb()
+
+    const onShareProduct = async () => {
+        const shareData = {
+            title: `${nameLabel} | Tiran Lasry`,
+            text: isEnglish 
+                ? `Check out the "${nameLabel}" lighting fixture by Tiran Lasry:` 
+                : `כדאי לראות את גוף התאורה "${nameLabel}" של טירן לסרי:`,
+            url: window.location.href,
+        }
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData)
+            } catch (err: unknown) {
+                if ((err as { name?: string })?.name !== 'AbortError') {
+                    setIsShareModalOpen(true)
+                }
+            }
+        } else {
+            setIsShareModalOpen(true)
+        }
+    }
+    
+    // Texts
+    const descTitle = isEnglish ? 'Description' : 'תיאור'
+    const specsTitle = isEnglish ? 'Technical Specifications' : 'מפרט טכני'
+    const sizeTitle = isEnglish ? 'Dimensions' : 'מידות'
+    const linkLabel = isEnglish ? 'Request a Quote' : 'בקשה להצעת מחיר'
+
+    const materialsStr = product.material.map(m => isEnglish ? m.en : m.he).join(', ')
+    const hasMetal = product.material.some(m => m.en.toLowerCase() === 'metal')
+    const woodStr = product.woodType.map(w => isEnglish ? w.en : w.he).join(', ')
+    const hasWood = woodStr && !product.woodType.some(w => w.en.toLowerCase() === 'no wood')
+    const bulbStr = product.socketType?.screwType || ''
+    const voltStr = product.socketType?.lightType || ''
+
+    const skuStr = product.price
+        ? product.price
+            .filter(p => p.sku)
+            .map(p => {
+                const isNoWood = p.wood.en.toLowerCase() === 'no wood'
+                const woodLabel = isNoWood ? '' : (isEnglish ? p.wood.en : p.wood.he)
+                const sizeLabel = p.size ? p.size : ''
+
+                let bracketContent = ''
+                if (woodLabel && sizeLabel) {
+                    bracketContent = `${woodLabel} - ${sizeLabel}`
+                } else if (woodLabel) {
+                    bracketContent = woodLabel
+                } else if (sizeLabel) {
+                    bracketContent = sizeLabel
+                }
+
+                return bracketContent ? `${p.sku}(${bracketContent})` : p.sku
+            })
+            .join(', ')
+        : ''
+
+    const uniqueWoodTypes = product.price ? Array.from(new Set(product.price.map(p => p.wood.en))).map(en => {
+        return product.price!.find(p => p.wood.en === en)!.wood
+    }) : []
+
+    const availablePricesForWood = product.price ? product.price.filter(p => p.wood.en === selectedWoodEn) : []
+    const activePrice = availablePricesForWood[selectedPriceIdx] || availablePricesForWood[0]
+
+    const onBack = () => {
+        if (window.history.length > 1) {
+            navigate(-1)
+        } else {
+            const cat = product?.category[0]?.en?.toLowerCase() || 'pendant'
+            const routeCat = cat === 'hanging' ? 'pendant' : cat
+            navigate(`/product/category/${routeCat}`)
+        }
+    }
+
+    const onToggleSpecs = (e: React.SyntheticEvent) => {
+        e.preventDefault()
+        suppressHeaderScrollFor(1000)
+        setIsSpecsOpen(prev => !prev)
+    }
+
+    const onToggleDimensions = (e: React.SyntheticEvent) => {
+        e.preventDefault()
+        suppressHeaderScrollFor(1000)
+        setIsDimensionsOpen(prev => !prev)
+    }
+
+    return (
+        <div className={`product-details-page ${isEnglish ? 'ltr' : 'rtl'}`} dir={isEnglish ? 'ltr' : 'rtl'}>
+            
+            <div className="product-navigation-header">
+                <button 
+                    className="back-to-category-btn" 
+                    onClick={onBack}
+                >
+                    <Icons iconName={isEnglish ? 'back' : 'next'} />
+                    <span>{isEnglish ? 'Back' : 'חזרה'}</span>
+                </button>
+
+                <nav className="product-breadcrumbs" aria-label={isEnglish ? 'Breadcrumb' : 'נתיב ניווט'}>
+                    <Link to="/" className="breadcrumb-link">
+                        {isEnglish ? 'Home' : 'בית'}
+                    </Link>
+                    <span className="breadcrumb-separator" aria-hidden="true">/</span>
+                    <Link to={categoryBreadcrumb.path} className="breadcrumb-link">
+                        {categoryBreadcrumb.label}
+                    </Link>
+                    <span className="breadcrumb-separator" aria-hidden="true">/</span>
+                    <span className="breadcrumb-current" aria-current="page">
+                        {nameLabel}
+                    </span>
+                </nav>
+            </div>
+
+            <div className="product-top-section">
+                
+                {/* RIGHT SIDE: INFO (Flex swaps this visually on LTR/RTL) */}
+                <div className="product-info-container">
+                    <div className="product-info-content">
+                        <div className="product-info-header">
+                            <div className="product-title-wrapper">
+                                <div className="title-row">
+                                    <h1>{nameLabel}</h1>
+                                    <div className="title-actions">
+                                        <button 
+                                            className="product-share-btn" 
+                                            onClick={onShareProduct}
+                                            title={isEnglish ? 'Share Product' : 'שתף מוצר'}
+                                            aria-label={isEnglish ? 'Share Product' : 'שתף מוצר'}
+                                        >
+                                            <span className="share-btn-text">{isEnglish ? 'Share' : 'שתף'}</span>
+                                            <Icons iconName="share-box" />
+                                        </button>
+                                        {isAdmin && (
+                                            <button 
+                                                className="admin-edit-btn-details" 
+                                                onClick={() => navigate(`/dashboard?edit=${product._id}`)}
+                                                title={isEnglish ? 'Edit Product' : 'ערוך מוצר'}
+                                            >
+                                                <Icons iconName="edit" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                {activePrice?.amount !== undefined && (
+                                    <h2 className="product-price">
+                                        ₪{activePrice.amount}
+                                    </h2>
+                                )}
+                            </div>
+
+                            {user && (
+                                <div className="variant-selectors">
+                                    {uniqueWoodTypes.length > 1 && (
+                                        <div className="wood-selector-details">
+                                            <label htmlFor="wood-select">{isEnglish ? 'Select Finish:' : 'בחר גימור:'}</label>
+                                            <select 
+                                                id="wood-select"
+                                                value={selectedWoodEn}
+                                                onChange={(e) => {
+                                                    setSelectedWoodEn(e.target.value)
+                                                    setSelectedPriceIdx(0)
+                                                }}
+                                            >
+                                                {uniqueWoodTypes.map((wood, idx) => (
+                                                    <option key={idx} value={wood.en}>
+                                                        {isEnglish ? wood.en : wood.he}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+
+                                    {availablePricesForWood.length > 1 ? (
+                                        <div className="wood-selector-details">
+                                            <label htmlFor="size-select">{isEnglish ? 'Select Size:' : 'בחר מידה:'}</label>
+                                            <select 
+                                                id="size-select"
+                                                value={selectedPriceIdx}
+                                                onChange={(e) => setSelectedPriceIdx(+e.target.value)}
+                                            >
+                                                {availablePricesForWood.map((p, idx) => (
+                                                    <option key={idx} value={idx}>
+                                                        {p.size || (isEnglish ? `Default` : `רגיל`)}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : (
+                                        activePrice?.size && (
+                                            <div className="wood-selector-details">
+                                                <span style={{ fontSize: '0.9rem', color: '#666' }}>
+                                                    <strong>{isEnglish ? 'Size:' : 'מידה:'}</strong> {activePrice.size}
+                                                </span>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="product-sections">
+                            <div className="product-sec1">
+                                <h3>{descTitle}</h3>
+                                <p className="description">{descriptionLabel}</p>
+                            </div>
+
+                            {product.size && product.size.length > 0 && (
+                                <div className="product-sec3 drilldown">
+                                    <button 
+                                        type="button"
+                                        className="drilldown-toggle-btn"
+                                        onClick={onToggleDimensions}
+                                        aria-expanded={isDimensionsOpen}
+                                    >
+                                        <span className="drilldown-icon">
+                                            <Icons iconName="plus" />
+                                        </span>
+                                        <h3>{sizeTitle}</h3>
+                                    </button>
+                                    <div className={`drilldown-collapse ${isDimensionsOpen ? 'open' : ''}`}>
+                                        <div className="drilldown-inner">
+                                            <ul className="sizes-list">
+                                                {product.size.map((s, idx) => {
+                                                    const parts = []
+                                                    if (isEnglish) {
+                                                        if (s.upTo) parts.push(`Up to ${s.upTo} cm`)
+                                                        if (s.diameter) parts.push(`Diameter ${s.diameter} cm`)
+                                                        if (s.length) parts.push(`Length ${s.length} cm`)
+                                                        if (s.width) parts.push(`Width ${s.width} cm`)
+                                                        if (s.depth) parts.push(`Depth ${s.depth} cm`)
+                                                        if (s.height) parts.push(`Height ${s.height} cm`)
+                                                    } else {
+                                                        if (s.upTo) parts.push(`עד ל- ${s.upTo} ס"מ`)
+                                                        if (s.diameter) parts.push(`קוטר ${s.diameter} ס"מ`)
+                                                        if (s.length) parts.push(`אורך ${s.length} ס"מ`)
+                                                        if (s.width) parts.push(`רוחב ${s.width} ס"מ`)
+                                                        if (s.depth) parts.push(`עומק ${s.depth} ס"מ`)
+                                                        if (s.height) parts.push(`גובה ${s.height} ס"מ`)
+                                                    }
+                                                    return (
+                                                        <li key={idx}>
+                                                            {parts.join(', ')}
+                                                        </li>
+                                                    )
+                                                })}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="product-sec2 drilldown">
+                                <button 
+                                    type="button"
+                                    className="drilldown-toggle-btn"
+                                    onClick={onToggleSpecs}
+                                    aria-expanded={isSpecsOpen}
+                                >
+                                    <span className="drilldown-icon">
+                                        <Icons iconName="plus" />
+                                    </span>
+                                    <h3>{specsTitle}</h3>
+                                </button>
+                                <div className={`drilldown-collapse ${isSpecsOpen ? 'open' : ''}`}>
+                                    <div className="drilldown-inner">
+                                        <ul className="specs-list">
+                                            {skuStr && <li>{isEnglish ? 'SKU:' : 'מקט:'} {skuStr}</li>}
+                                            {hasWood && <li>{isEnglish ? 'Wood Type:' : 'סוג עץ:'} {woodStr}</li>}
+                                            {materialsStr && <li>{isEnglish ? 'Materials:' : 'חומרים:'} {materialsStr}</li>}
+                                            {voltStr && <li>{isEnglish ? 'Wattage:' : 'הספק:'} {voltStr}</li>}
+                                            {bulbStr && <li>{isEnglish ? 'Bulb Type:' : 'סוג נורה:'} {bulbStr}</li>}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {(hasWood || hasMetal) && (
+                                <div className="product-material-notes">
+                                    {hasWood && (
+                                        <p className="natural-material-note">
+                                            {isEnglish 
+                                                ? '* Slight variations in wood tone may occur due to the natural character of the material' 
+                                                : '* ייתכנו שינויים קלים בגוון העץ בשל אופיו הטבעי של החומר'}
+                                        </p>
+                                    )}
+                                    {hasMetal && (
+                                        <p className="natural-material-note">
+                                            {isEnglish 
+                                                ? '* Metal color is customizable' 
+                                                : '* צבע המתכת ניתן לבחירה'}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {isSupplier && (
+                                <p className="supplier-vat-disclaimer">
+                                    * {isEnglish ? 'Prices do not include VAT' : 'המחירים אינם כוללים מע"מ'}
+                                </p>
+                            )}
+
+                            <div className="product-sec4">
+                                <div className="term-box">
+                                    <h4>{isEnglish ? 'Customization' : 'התאמה אישית'}</h4>
+                                    <p>{isEnglish ? 'Dimensions and finishes can be customized.' : 'ניתן לשנות מידות וגימורים או לפתח דגם ייעודי לפרויקט.'}</p>
+                                </div>
+                                <div className="term-box">
+                                    <h4>{isEnglish ? 'Production Time' : 'זמן ייצור'}</h4>
+                                    <p>{isEnglish ? 'Made to order: up to 30 business days.' : 'בהזמנה: עד 30 ימי עסקים.'}</p>
+                                </div>
+                                <div className="term-box">
+                                    <h4>{isEnglish ? 'Warranty' : 'אחריות'}</h4>
+                                    <p>{isEnglish ? '1 year warranty subject to terms and conditions.' : 'שנה אחריות בהתאם לתקנון.'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href={`https://wa.me/972547513434?text=${encodeURIComponent(
+                            isEnglish 
+                                ? `Hi, I would like to request a quote for the lighting fixture "${nameLabel}".` 
+                                : `היי, אשמח לקבל הצעת מחיר עבור גוף התאורה "${nameLabel}".`
+                        )}`} target="_blank" rel="noopener noreferrer" className="quote-btn">
+                            <span>{linkLabel}</span>
+                            <span className="quote-btn-icon">
+                                <Icons iconName={isEnglish ? 'next' : 'back'} />
+                            </span>
+                        </a>
+                    </div>
+                </div>
+
+                {/* LEFT SIDE: GALLERY */}
+                <div className="product-gallery-container">
+                    <div className="gallery-top">
+                        {isNew && (
+                            <span 
+                                className={`product-details-new-badge ${isEnglish ? 'ltr' : 'rtl'}`} 
+                                dir={isEnglish ? "ltr" : "rtl"}
+                                aria-label={isEnglish ? "New Product!" : "מוצר חדש!"}
+                            >
+                                {isEnglish ? 'NEW!' : 'חדש!'}
+                            </span>
+                        )}
+                        {mainImage ? (
+                            <ImageWithSkeleton src={mainImage} alt={nameLabel} className="main-image" />
+                        ) : (
+                            <div className="no-image-placeholder" style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center', 
+                                height: '100%', 
+                                width: '100%', 
+                                backgroundColor: '#f4f4f4',
+                                color: '#666',
+                                fontSize: '18px'
+                            }}>
+                                {isEnglish ? 'No photo available' : 'אין תמונה זמינה'}
+                            </div>
+                        )}
+                    </div>
+                    <div className="gallery-bottom">
+                        {gallery.map((item, idx) => (
+                            <div 
+                                key={idx} 
+                                role="button"
+                                tabIndex={0}
+                                aria-label={`${isEnglish ? 'View image' : 'הצג תמונה'} ${idx + 1}`}
+                                className={`thumbnail-wrapper ${mainImage === item.mainUrl ? 'active' : ''}`}
+                                onClick={() => setMainImage(item.mainUrl)}
+                                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setMainImage(item.mainUrl)}
+                            >
+                                <ImageWithSkeleton src={item.thumbUrl} alt={`${nameLabel} thumb ${idx}`} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            <div className="suggestion">
+                <ProductSuggestion category={product.category[0].en} />
+            </div>
+            
+            <ContactSection />
+
+            <ShareModal 
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                productName={nameLabel}
+                productUrl={window.location.href}
+                productImage={mainImage}
+            />
+        </div>
+    )
+}

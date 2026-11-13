@@ -1,0 +1,333 @@
+
+import Logo from '/images/Figma/Tiran_T_Grey_Logo.png';
+import { Icons } from "./Icons";
+import { useWindowWidth } from "../hooks/useWindowWidth";
+import type { FullProductsOrNull, hebrewEnglishObj } from '../model/product.model';
+import { NavigationList } from './NavigationList';
+import { useEffect, useState, useMemo, useRef, type ChangeEvent } from 'react';
+import { MenuModal } from './MenuModal';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../hooks/useLanguage';
+import { Input } from '@mui/material';
+import { useDebounce } from '../hooks/useDebounce';
+import { productService } from '../services/product.service';
+import { authService } from '../services/auth.service';
+import { optionsService } from '../services/options.service';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { Miniuser } from '../model/user.model';
+import { ImageWithSkeleton } from './Skeleton/ImageWithSkeleton';
+import { buildCloudinaryImageUrl, pickPrimaryProductImage } from '../utils/cloudinary';
+import { formatProductPriceRange } from '../utils/product-filters';
+import { isHeaderScrollSuppressed } from '../utils/scroll-lock';
+import '../assets/styles/cmps/AppHeader.css';
+
+
+
+export type SubMenu = {
+    title: hebrewEnglishObj
+    address: string
+}[]
+
+export type NavbarProperties = {
+    title: hebrewEnglishObj
+    address?: string,
+    iconName?: string,
+    subMenu?: SubMenu
+}[]
+
+export const AppHeader = () => {
+    const [isMenuOpen, setIsMenuOpen] = useState(false)
+    const [isOnSearch, setIsOnSearch] = useState(false)
+    const [inputSearch, setInputSearch] = useState('')
+    const [isVisible, setIsVisible] = useState(true)
+    const [isScrolled, setIsScrolled] = useState(false)
+    const lastScrollY = useRef(0)
+    
+    const width = useWindowWidth()
+    const navigate = useNavigate()
+    const { language } = useLanguage()
+    const debouncedSearch = useDebounce(inputSearch, 500);
+    const [resultProduct, setResultProduct] = useState<FullProductsOrNull>(null)
+    const [user, setUser] = useState<Miniuser | null>(authService.getLoggedinUser())
+
+    const isMobile = width <= 768;
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY
+            
+            // Show shadow if scrolled at all
+            setIsScrolled(currentScrollY > 0)
+
+            // Temporarily ignore scroll events triggered by accordion / drilldown layout shifts
+            if (isHeaderScrollSuppressed()) {
+                lastScrollY.current = currentScrollY
+                return
+            }
+
+            const delta = currentScrollY - lastScrollY.current
+
+            // Logic for Smart Sticky
+            if (isMenuOpen) {
+                setIsVisible(true)
+            } else if (currentScrollY < 50) {
+                setIsVisible(true)
+            } else if (delta > 10) {
+                setIsVisible(false) // Scrolling down
+            } else if (delta < -10) {
+                setIsVisible(true) // Scrolling up
+            }
+            
+            lastScrollY.current = currentScrollY
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true })
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [isMenuOpen])
+
+    const queryClient = useQueryClient()
+    const { data: siteOptions } = useQuery({
+        queryKey: ['site-options'],
+        queryFn: () => optionsService.getSiteOptions(),
+        staleTime: 1000 * 60 * 5
+    })
+
+    useEffect(() => {
+        const onSiteOptionsChanged = () => {
+            queryClient.invalidateQueries({ queryKey: ['site-options'] })
+        }
+        window.addEventListener('site-options-changed', onSiteOptionsChanged)
+        return () => window.removeEventListener('site-options-changed', onSiteOptionsChanged)
+    }, [queryClient])
+
+    const navbarProperties: NavbarProperties = useMemo(() => {
+        const lightingSubMenu: SubMenu = [
+            { title: { en: 'All Lighting Fixtures', he: 'כל גופי התאורה' }, address: '/product/category/all' }
+        ]
+
+        if (siteOptions?.isNewCollectionActive !== false) {
+            lightingSubMenu.push({
+                title: { en: 'New Collection', he: 'קולקציה חדשה' },
+                address: '/product/category/new-collection'
+            })
+        }
+
+        lightingSubMenu.push(
+            { title: { en: 'Wall', he: 'גופי תאורה לקיר' }, address: '/product/category/wall' },
+            { title: { en: 'Pendant', he: 'גופי תאורה תלויים' }, address: '/product/category/pendant' },
+            { title: { en: 'Ceiling', he: 'גופי תאורה צמודי תקרה' }, address: '/product/category/ceiling' }
+        )
+
+        const props: NavbarProperties = [
+            { title: { en: 'Home', he: 'בית' }, address: '/' },
+            {
+                title: { en: 'Lighting', he: 'גופי תאורה' },
+                iconName: 'dropdown',
+                subMenu: lightingSubMenu
+            },
+            { title: { en: 'About', he: 'אודות' }, address: '/about' },
+            { title: { en: 'Contact', he: 'יצירת קשר' }, address: '/contact' }
+        ]
+
+        if (user?.role?.trim().toLowerCase() === 'admin') {
+            props.push({ title: { en: 'Dashboard', he: 'לוח בקרה' }, address: '/dashboard' })
+        }
+
+        return props
+    }, [user, siteOptions?.isNewCollectionActive])
+
+    useEffect(() => {
+        const onUserChanged = () => setUser(authService.getLoggedinUser())
+        window.addEventListener('user-changed', onUserChanged)
+        return () => window.removeEventListener('user-changed', onUserChanged)
+    }, [])
+
+    useEffect(() => {
+        if (isMenuOpen) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = 'unset'
+        }
+    }, [isMenuOpen])
+
+    useEffect(() => {
+
+        const getSearchResult = async () => {
+            if(debouncedSearch) {
+                const filterBy = { txt: debouncedSearch }
+                const productFromDB = await productService.query(filterBy)
+                setResultProduct(productFromDB)
+            }else{
+                setResultProduct(null)
+            }
+        }
+        
+        getSearchResult()
+
+    }, [debouncedSearch])
+
+    const handleOpenMenu = () => {
+        setIsMenuOpen(prev => !prev)
+        setIsOnSearch(false)
+    }
+
+    const handleSearch = () => {
+        setIsMenuOpen(true)
+        setIsOnSearch(true)
+    }
+
+    const onHandleChangeInput = (ev: ChangeEvent<HTMLInputElement>) => {
+        const { value } = ev.target;
+        setInputSearch(value)
+    }
+
+    const navigateToProduct = (id:string)=>{
+        setInputSearch('');
+        setIsMenuOpen(false)
+        setIsOnSearch(false)
+        navigate(`product/${id}`)
+
+
+    }
+
+    const onLogout = async () => {
+        try {
+            await authService.logout()
+            window.location.assign('/')
+        } catch (err) {
+            console.error('Failed to logout', err)
+        }
+    }
+
+    const isEnglish = language === 'en'
+    return (
+        <header className={`app-header ${isEnglish?`en-dir`:`he-dir`} ${!isVisible ? 'header-hidden' : ''} ${isScrolled ? 'scrolled' : ''}`}>
+            <div 
+                className="logo" 
+                role="link"
+                tabIndex={0}
+                aria-label={isEnglish ? "Go to Home Page" : "חזור לדף הבית"}
+                onClick={() => navigate('/')}
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && navigate('/')}
+            >
+                <img src={Logo} alt="Tiran-Logo" />
+            </div>
+            <nav className="nav-bar">
+                {user && !isMobile ? (
+                    <div className="user-logged-in" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginInlineEnd: isMobile ? '12px' : '24px', fontSize: '14px', fontFamily: 'Heebo, sans-serif' }}>
+                        <span style={{ color: 'rgba(126, 133, 136, 1)' }}>{isEnglish ? `Hi, ${user.fullname}` : `שלום, ${user.fullname}`}</span>
+                        <button onClick={onLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', color: 'inherit', fontFamily: 'inherit' }}>
+                            {isEnglish ? 'Logout' : 'התנתק'}
+                        </button>
+                    </div>
+                ) : !user ? (
+                    <button 
+                        className="user-btn" 
+                        onClick={() => navigate('/login')} 
+                        aria-label={isEnglish ? 'Login' : 'התחברות'} 
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginInlineEnd: isMobile ? '12px' : '24px', display: 'flex', alignItems: 'center', color: 'inherit' }}
+                    >
+                        <Icons iconName="user" />
+                    </button>
+                ) : null}
+                {isMobile && (
+                    <button 
+                        className="search-btn-mobile" 
+                        onClick={handleSearch} 
+                        aria-label={isEnglish ? 'Search' : 'חיפוש'} 
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginInlineEnd: '12px', display: 'flex', alignItems: 'center', color: 'inherit' }}
+                    >
+                        <Icons iconName="search" />
+                    </button>
+                )}
+                {isMobile ? <button className={`menu-icon ${isMenuOpen ? `active` : ``}`} onClick={handleOpenMenu} aria-expanded={isMenuOpen} aria-label={isEnglish ? 'Menu' : 'תפריט'} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}> <Icons iconName="menu" /> </button> :
+                    <NavigationList navLinks={navbarProperties} handleSearch={handleSearch} />
+                }
+            </nav>
+
+            {/* Side sub-menu on mobile */}
+            {isMenuOpen && !isOnSearch && <MenuModal closeMenu={handleOpenMenu} >
+                <div className={`menu-modal ${isEnglish ? 'en-dir' : 'he-dir'} ` } dir={isEnglish ? 'ltr' : 'rtl'} onClick={(e) => e.stopPropagation()}>
+                    <button className="exit-btn" onClick={handleOpenMenu} aria-label={isEnglish ? 'Close menu' : 'סגור תפריט'}><Icons iconName={"close"} /></button>
+                    <h1>{isEnglish ? 'Menu' : 'תפריט'}</h1>
+                    <NavigationList navLinks={navbarProperties} closeMenu={handleOpenMenu} />
+                    
+                    {isMobile && user && (
+                        <div className="mobile-user-actions" style={{ marginTop: 'auto', padding: '20px', borderTop: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <span style={{ color: 'rgba(126, 133, 136, 1)', fontSize: '16px' }}>{isEnglish ? `Hi, ${user.fullname}` : `שלום, ${user.fullname}`}</span>
+                            <button onClick={onLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '10px 0', textDecoration: 'underline', color: '#d32f2f', textAlign: 'inherit', fontSize: '16px', fontFamily: 'inherit' }}>
+                                {isEnglish ? 'Logout' : 'התנתק'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </MenuModal>}
+
+            {/* Side search on mobile */}
+            {isOnSearch && <MenuModal closeMenu={handleOpenMenu} >
+                <div className={`menu-modal search-modal ${isEnglish ? 'en-dir' : 'he-dir'}`} dir={isEnglish ? 'ltr' : 'rtl'} onClick={(e) => e.stopPropagation()}>
+                    <button className="exit-btn" onClick={handleOpenMenu} aria-label={isEnglish ? 'Close' : 'סגור'}><Icons iconName={"close"} /></button>
+                    <div className='text-field-search'>
+                        <Input 
+                            autoFocus 
+                            color='primary' 
+                            onChange={onHandleChangeInput} 
+                            value={inputSearch} 
+                            sx={{ 
+                                width: '100%', 
+                                fontSize: '1.1rem',
+                                '&:before': { borderBottomColor: '#e0e0e0' },
+                                '&:after': { borderBottomColor: '#000' }
+                            }} 
+                            dir={isEnglish ? 'ltr' : 'rtl'} 
+                            placeholder={isMobile ? (isEnglish ? 'Search...' : 'חיפוש...') : (isEnglish ? 'Search lighting fixtures...' : 'חפש גופי תאורה...')} 
+                            inputProps={{ 'aria-label': isEnglish ? 'Search products' : 'חפש מוצרים' }} 
+                        />
+                    </div>
+                    <div className="search-results">
+                        {debouncedSearch?
+                        <ul>
+                            {resultProduct?.map(product => {
+                                const displayPhoto = pickPrimaryProductImage(product.imgsUrl)
+                                const priceRange = user ? formatProductPriceRange(product.price) : null
+
+                                return (
+                                    <li key={product._id} role="link" tabIndex={0} onClick={()=>navigateToProduct(product._id as string)} onKeyDown={(e)=> (e.key === 'Enter' || e.key === ' ') && navigateToProduct(product._id as string)}>
+                                        <div>
+                                            <div className="image-container">
+                                                {displayPhoto ? (
+                                                    <ImageWithSkeleton src={buildCloudinaryImageUrl(displayPhoto)} alt={product.name.en} />
+                                                ) : (
+                                                    <div className="no-photo-placeholder-search" style={{ 
+                                                        width: '100%', 
+                                                        height: '100%', 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        justifyContent: 'center', 
+                                                        backgroundColor: '#f4f4f4', 
+                                                        fontSize: '10px', 
+                                                        color: '#999',
+                                                        textAlign: 'center'
+                                                    }}>
+                                                        {isEnglish ? 'No photo' : 'אין תמונה'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p>{isEnglish ? product.name.en : product.name.he}</p>
+                                        </div>
+                                        {priceRange && (
+                                            <b dir="ltr">{priceRange}</b>
+                                        )}
+                                    </li>
+                                )
+                            })}
+                        </ul>:
+                        <p>{isEnglish?`Start Searching...`:`התחל בחיפוש...`}</p>
+                        }
+                    </div>
+                </div>
+            </MenuModal>}
+
+        </header >
+    )
+}

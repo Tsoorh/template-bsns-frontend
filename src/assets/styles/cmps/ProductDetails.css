@@ -1,0 +1,680 @@
+.product-details-page {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /* padding-top: 104px; Offset for header */
+    background-color: var(--header-bgc);
+    overflow-x: hidden;
+}
+
+.product-navigation-header {
+    width: 1440px;
+    max-width: 100%;
+    margin: 0 auto 24px;
+    padding: 20px 40px 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.back-to-category-btn {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    font-size: 16px;
+    color: rgba(30, 28, 25, 0.7);
+    padding: 0;
+    transition: color 0.3s;
+    width: fit-content;
+}
+
+.back-to-category-btn:hover {
+    color: rgba(30, 28, 25, 1);
+}
+
+.back-to-category-btn svg {
+    font-size: 14px;
+}
+
+/* Breadcrumbs Navigation */
+.product-breadcrumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+    color: rgba(30, 28, 25, 0.5);
+}
+
+.breadcrumb-link {
+    color: rgba(30, 28, 25, 0.6);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    color: rgba(30, 28, 25, 1);
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    margin: 0 8px;
+    color: rgba(30, 28, 25, 0.35);
+    user-select: none;
+}
+
+.breadcrumb-current {
+    color: rgba(30, 28, 25, 0.9);
+    font-weight: 500;
+    cursor: default;
+    pointer-events: none;
+    user-select: text;
+}
+
+.product-top-section {
+    width: 1440px;
+    max-width: 100%;
+    margin: 0 auto 100px;
+    display: flex;
+    gap: 32px;
+    padding: 0 40px;
+    box-sizing: border-box;
+}
+
+/* LTR/RTL Flex directions */
+.product-details-page.rtl .product-top-section { flex-direction: row-reverse; }
+.product-details-page.ltr .product-top-section { flex-direction: row-reverse; }
+
+/* --- RIGHT SIDE: PRODUCT INFO --- */
+.product-info-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.product-details-page.rtl .product-info-container { padding-right: 40px; }
+.product-details-page.ltr .product-info-container { padding-left: 40px; }
+
+.product-info-content {
+    width: 100%;
+    max-width: 624px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Spreads header, sections, and button */
+    min-height: 100%; /* Match gallery height without overflow */
+    gap: 30px; /* Minimum gap between distributed items */
+}
+
+.product-info-header {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Small fixed gap between title and wood selector */
+}
+
+.product-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+}
+
+.title-row h1 {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    font-size: 36px;
+    line-height: 110%;
+    margin: 0;
+    color: rgba(30, 28, 25, 1);
+    flex: 1;
+}
+
+.title-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    padding-top: 4px;
+}
+
+.admin-edit-btn-details {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #333;
+}
+
+.admin-edit-btn-details:hover {
+    background: #e0e0e0;
+    transform: scale(1.05);
+    color: #000;
+}
+
+.product-share-btn {
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: 'Heebo', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: rgba(30, 28, 25, 0.65);
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.product-share-btn:hover {
+    color: rgba(30, 28, 25, 1);
+    background-color: rgba(30, 28, 25, 0.05);
+}
+
+.product-share-btn svg {
+    font-size: 18px;
+}
+
+.share-btn-text {
+    line-height: 1;
+}
+
+.product-price {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 500;
+    font-size: 24px;
+    color: rgba(30, 28, 25, 1);
+    margin: 0;
+}
+
+.wood-selector-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: fit-content;
+}
+
+.wood-selector-details label {
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(30, 28, 25, 0.7);
+}
+
+.wood-selector-details select {
+    font-family: 'Heebo', sans-serif;
+    font-size: 16px;
+    padding: 8px 12px;
+    border: 1px solid rgba(30, 28, 25, 0.2);
+    background-color: var(--header-bgc);
+    cursor: pointer;
+    border-radius: 4px;
+    min-width: 200px;
+}
+
+.supplier-vat-disclaimer {
+    font-family: 'Heebo', sans-serif;
+    font-size: 14px;
+    color: rgba(126, 133, 136, 0.6);
+    margin: 10px 0;
+}
+
+.product-material-notes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: -20px; /* Sits closely and cleanly right below the drilldown bottom border */
+}
+
+.natural-material-note {
+    font-family: 'Heebo', sans-serif;
+    font-size: 13px;
+    line-height: 130%;
+    color: rgba(126, 133, 136, 0.85);
+    margin: 0;
+}
+
+.product-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    flex: 1; /* Allow sections to take available space */
+    justify-content: flex-start;
+}
+
+.product-sections h3 {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    line-height: 100%;
+    color: rgba(30, 28, 25, 1);
+    margin-bottom: 12px;
+}
+
+.product-sections p, .product-sections li {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 140%;
+    color: rgba(126, 133, 136, 1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sizes-list, .specs-list {
+    padding: 0;
+    margin: 0;
+}
+
+/* Drilldown Section */
+.product-sec3.drilldown,
+.product-sec2.drilldown {
+    border-top: 1px solid rgba(184, 180, 174, 0.45);
+    border-bottom: 1px solid rgba(184, 180, 174, 0.45);
+    padding: 12px 0;
+    transition: border-color 0.3s ease;
+}
+
+.product-sec3.drilldown + .product-sec2.drilldown {
+    margin-top: -32px;
+    border-top: none;
+}
+
+.drilldown-toggle-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 8px 6px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    color: rgba(30, 28, 25, 1);
+    font-family: inherit;
+    text-align: inherit;
+    border-radius: 4px;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.drilldown-toggle-btn:hover {
+    background-color: rgba(30, 28, 25, 0.04);
+}
+
+.drilldown-toggle-btn h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.drilldown-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid rgba(30, 28, 25, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(30, 28, 25, 0.03);
+    color: rgba(30, 28, 25, 0.85);
+    flex-shrink: 0;
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+                background-color 0.25s ease,
+                border-color 0.25s ease,
+                color 0.25s ease;
+}
+
+.drilldown-toggle-btn:hover .drilldown-icon {
+    background-color: rgba(30, 28, 25, 0.08);
+    border-color: rgba(30, 28, 25, 0.7);
+    color: rgba(30, 28, 25, 1);
+}
+
+.drilldown-toggle-btn[aria-expanded="true"] .drilldown-icon {
+    transform: rotate(45deg);
+    background-color: rgba(30, 28, 25, 0.1);
+    border-color: rgba(30, 28, 25, 0.85);
+    color: rgba(30, 28, 25, 1);
+}
+
+/* Smooth slow expand/collapse animation via grid-template-rows */
+.drilldown-collapse {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.drilldown-collapse.open {
+    grid-template-rows: 1fr;
+}
+
+.drilldown-inner {
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1) 0.1s,
+                transform 0.5s cubic-bezier(0.25, 1, 0.5, 1) 0.1s;
+}
+
+.drilldown-collapse.open .drilldown-inner {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.drilldown-inner .specs-list,
+.drilldown-inner .sizes-list {
+    padding-top: 14px;
+}
+
+/* Sec 4 (Terms) Layout */
+.product-sec4 {
+    display: flex;
+    gap: 16px;
+    padding-top: 20px;
+}
+
+.term-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.product-details-page.rtl .term-box {
+    padding-left: 16px;
+    border-left: 1px solid rgba(184, 180, 174, 1);
+}
+.product-details-page.ltr .term-box {
+    padding-right: 16px;
+    border-right: 1px solid rgba(184, 180, 174, 1);
+}
+.term-box:last-child {
+    border: none !important;
+}
+
+.term-box h4 {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: rgba(30, 28, 25, 1);
+    margin: 0;
+}
+
+/* CTA Button */
+.quote-btn {
+    width: 100%;
+    height: 53px;
+    background: rgba(126, 133, 136, 1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 42px;
+    border: none;
+    cursor: pointer;
+    color: rgba(244, 242, 239, 1);
+    font-family: 'Heebo', sans-serif;
+    font-weight: 300;
+    font-size: 18px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 0; /* space-between handles this now */
+    box-sizing: border-box;
+    transform: none !important;
+    opacity: 1 !important;
+}
+
+.quote-btn:hover {
+    background-color: rgba(45, 48, 50, 1);
+    box-shadow: 0 6px 20px rgba(30, 28, 25, 0.15);
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* Directional Arrow Slide on Hover */
+.quote-btn .quote-btn-icon {
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* In RTL (Hebrew): Arrow points left, slide 6px left */
+.product-details-page.rtl .quote-btn:hover .quote-btn-icon {
+    transform: translateX(-6px);
+}
+
+/* In LTR (English): Arrow points right, slide 6px right */
+.product-details-page.ltr .quote-btn:hover .quote-btn-icon {
+    transform: translateX(6px);
+}
+
+/* --- LEFT SIDE: GALLERY --- */
+.product-gallery-container {
+    width: 100%;
+    max-width: 704px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gallery-top {
+    position: relative;
+    width: 100%;
+    max-width: 704px;
+    max-height: 704px;
+    aspect-ratio: 1 / 1;
+    background: #f4f4f4;
+    overflow: hidden;
+}
+
+.product-details-new-badge {
+    position: absolute;
+    top: 16px;
+    z-index: 5;
+    background-color: rgba(30, 28, 25, 0.92);
+    color: #ffffff;
+    font-family: 'Heebo', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    pointer-events: none;
+    line-height: 1.2;
+}
+
+/* English: LEFT top corner */
+.product-details-new-badge.ltr,
+[dir="ltr"] .product-details-new-badge,
+.product-details-page.ltr .product-details-new-badge {
+    left: 16px;
+    right: auto;
+}
+
+/* Hebrew: RIGHT top corner */
+.product-details-new-badge.rtl,
+[dir="rtl"] .product-details-new-badge,
+.product-details-page.rtl .product-details-new-badge {
+    right: 16px;
+    left: auto;
+}
+
+.gallery-top .main-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.gallery-bottom {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 702px;
+    max-height: 168px;
+}
+
+.thumbnail-wrapper {
+    flex: 1;
+    aspect-ratio: 1 / 1;
+    max-width: 168px;
+    max-height: 168px;
+    cursor: pointer;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.thumbnail-wrapper.active {
+    border-color: rgba(126, 133, 136, 1);
+}
+
+.thumbnail-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- SUGGESTION SECTION --- */
+.suggestion {
+    width: 1440px;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 80px;
+    margin-bottom: 60px;
+    box-sizing: border-box;
+}
+
+.suggestion-header {
+    margin-bottom: 60px;
+}
+
+.suggestion-header h2 {
+    font-family: 'Heebo', sans-serif;
+    font-weight: 300;
+    font-size: 32px;
+    line-height: 130%;
+    color: rgba(30, 28, 25, 1);
+    margin: 0;
+}
+
+.suggestion-carousel-container {
+    position: relative;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.suggestion-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.suggestion-list > li {
+    width: 100%;
+    height: auto;
+}
+
+/* On desktop, limit to 3 suggestions to maintain the 3-col grid */
+@media (min-width: 1001px) {
+    .suggestion-list > li:nth-child(n+4) {
+        display: none;
+    }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1000px) {
+    .product-top-section {
+        flex-direction: column !important; /* Stack vertically on small screens */
+    }
+    .product-gallery-container {
+        order: -1; /* Puts gallery above info container */
+    }
+    .product-details-page.rtl .product-info-container,
+    .product-details-page.ltr .product-info-container {
+        padding: 0;
+    }
+    .suggestion-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .product-details-page {
+        padding-top: 70px; /* התאמה לגובה ההדר במובייל */
+    }
+
+    .product-navigation-header {
+        padding: 10px 20px 0;
+        margin-bottom: 16px;
+    }
+
+    .product-top-section {
+        padding: 0 20px;
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+
+    .product-title-wrapper h1 {
+        font-size: 28px;
+    }
+
+    .term-box h4 {
+        font-size: 14px;
+    }
+
+    .product-sections .term-box p {
+        font-size: 13px;
+    }
+
+    .product-info-content {
+        gap: 40px;
+    }
+
+    .suggestion {
+        padding: 0 20px;
+        margin-bottom: 40px;
+    }
+
+    .suggestion-header {
+        margin-bottom: 30px;
+    }
+
+    .suggestion-header h2 {
+        font-size: 24px;
+    }
+
+    .suggestion-list {
+        gap: 16px;
+    }
+
+    .suggestion-list > li {
+        width: 100%;
+    }
+}

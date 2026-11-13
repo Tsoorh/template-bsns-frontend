@@ -1,0 +1,71 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Heebo',sans-serif;
+    font-size: 18px;
+}
+
+body{
+    background-color: var(--background-color);
+}
+
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+body,img {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    text-decoration: none;
+    color: unset;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+img,
+embed,
+video,
+object {
+    max-width: 100%;
+    display: block;
+}
+
+select{
+    border:none;
+    background-color: var(--background-color);
+    border-radius: var(--border-radius1);
+}
+
+button, input[type="submit"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  color: inherit;
+  fill: currentColor;
+}
+
+/* ביטול צבע ההדגשה הכחול של iOS בלחיצה */
+a, button, div, svg {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* הכרחת צבע האייקון (תחליף את הסלקטורים לשמות המחלקות שלך אם צריך) */
+.close-button, .menu-toggle {
+  color: #333333 !important; /* או הצבע הכהה שאתה באמת רוצה */
+  fill: currentColor; /* אם זה SVG, זה יכריח אותו לקבל את צבע הטקסט */
+}

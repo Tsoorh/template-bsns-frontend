@@ -1,0 +1,25 @@
+:root {
+    /* basic colors */
+    /* --primary-color: rgb(255, 255, 255); */
+    --background-color: #FAF8F5;
+    /* --image-background-color: rgb(255, 255, 255); */
+    --header-bgc: #FAF8F5;
+    /* --guide-color1: rgba(255, 143, 91, 0.699); */
+
+    /* buttons */
+    --button-color: rgb(206, 206, 206);
+    --button-color-hover: rgb(121, 121, 121);
+
+
+    /* spacing and borders */
+    --border-radius1: 1rem;
+    --border-radius2: 2rem;
+    --spacing1: 1rem;
+    --spacing2: 2rem;
+
+    /* shadow */
+    --shadow-color: rgb(199, 199, 199)
+
+}
+
+

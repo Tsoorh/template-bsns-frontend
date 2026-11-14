@@ -110,10 +110,9 @@ export const siteConfig: SiteConfig = {
     supportedLanguages: ["he", "en"],
     defaultLanguage: "he",
     categories: [
-        { id: "collection-new", label: { en: "New Collection", he: "קולקציה חדשה" } },
-        { id: "featured", label: { en: "Signature Pieces", he: "פריטי דגל" } },
-        { id: "bespoke", label: { en: "Custom Commissions", he: "התאמה אישית" } },
-        { id: "all", label: { en: "All Objects", he: "כל הפריטים" } }
+        { id: "category-1", label: { en: "Category 1", he: "קטגוריה 1" } },
+        { id: "category-2", label: { en: "Category 2", he: "קטגוריה 2" } },
+        { id: "category-3", label: { en: "Category 3", he: "קטגוריה 3" } }
     ],
     features: {
         enableLightingSpecs: false,
